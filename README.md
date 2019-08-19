@@ -7,5 +7,5 @@ By applying Dynamo and Python scripts, I was able to automate the capping of ope
 <img src="images/open-ducts.png" width="400" >
 <br>
 
-*Ductwork Cappede*
-<img src="capped-ductwork.png" width="400" >
+##### Ductwork Capped
+<img src="images/capped-ductwork.png" width="500" >
