@@ -1,0 +1,40 @@
+import clr
+#import ProtoGeometry
+clr.AddReference('ProtoGeometry')
+from Autodesk.DesignScript.Geometry import *
+#import Revit API
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+# import RevitServices
+clr.AddReference("RevitServices")
+import RevitServices 
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+# import RevitNodes
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+clr.ImportExtensions(Revit.GeometryConversion)
+
+ductElements = UnwrapElement(IN[0])
+
+horizontalDucts = []
+offsetFail = []
+startOffsetValue = []
+endOffsetValue = []
+
+for duct in ductElements:	
+	# If duct is a riser (offsets are significantly different), then it will not be passed
+	# Non-horizontal ducts cause issues with orienting and connecting the duct cap family instances
+	parameterStartOffset = duct.LookupParameter("Start Offset")
+	parameterEndOffset = duct.LookupParameter("End Offset")
+	offsetDifference = abs(parameterStartOffset.AsDouble() - parameterEndOffset.AsDouble())
+	if parameterStartOffset.AsDouble() != parameterEndOffset.AsDouble() and offsetDifference > 0.01:
+		offsetFail.append(duct)
+		startOffsetValue.append(parameterStartOffset.AsDouble())
+		endOffsetValue.append(parameterEndOffset.AsDouble())
+	else:
+		horizontalDucts.append(duct)
+
+OUT = horizontalDucts, offsetFail, startOffsetValue, endOffsetValue

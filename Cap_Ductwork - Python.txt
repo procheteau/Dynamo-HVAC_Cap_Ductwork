@@ -1,0 +1,47 @@
+#Resizes created endcaps to match open connectors
+
+import clr
+#import ProtoGeometry
+clr.AddReference('ProtoGeometry')
+from Autodesk.DesignScript.Geometry import *
+#import Revit API
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+# import RevitServices
+clr.AddReference("RevitServices")
+import RevitServices 
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+# import RevitNodes
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+clr.ImportExtensions(Revit.GeometryConversion)
+
+doc = DocumentManager.Instance.CurrentDBDocument
+
+endCaps = UnwrapElement(IN[0])
+openConnectors = UnwrapElement(IN[1])
+	
+listLength = range(len(endCaps))	
+for i in listLength:
+	#try to get Radius property of open connector. If not, then duct is rectangular.
+	#Set the endcap dimensions to the size of the open connector.
+	try:
+		openConnectorRadius = openConnectors[i].Radius
+		TransactionManager.Instance.EnsureInTransaction(doc)
+		parameter = endCaps[i].LookupParameter("Radius")
+		parameter.Set(openConnectorRadius)
+		TransactionManager.Instance.TransactionTaskDone()
+	except:
+		openConnectorHeight = openConnectors[i].Height
+		openConnectorWidth = openConnectors[i].Width
+		TransactionManager.Instance.EnsureInTransaction(doc)
+		parameterHeight = endCaps[i].LookupParameter("Height")
+		parameterHeight.Set(openConnectorHeight)
+		parameterWidth = endCaps[i].LookupParameter("Width")
+		parameterWidth.Set(openConnectorWidth)
+		TransactionManager.Instance.TransactionTaskDone()
+
+OUT = endCaps
